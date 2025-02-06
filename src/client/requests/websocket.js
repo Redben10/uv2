@@ -27,11 +27,16 @@ class WebSocketApi extends EventEmitter {
 			this.window,
 			"WebSocket",
 			(target, that, args) => {
+				let url = new URL(args[0]);
+				if (!url.port) {
+					url.port = "443"; // Force WebSocket to use port 443
+				}
+
 				const fakeWebSocket = new EventTarget();
 				Object.setPrototypeOf(fakeWebSocket, this.wsProto);
 				fakeWebSocket.constructor = this.WebSocket;
 
-				const barews = client.createWebSocket(args[0], args[1], null, {
+				const barews = client.createWebSocket(url.toString(), args[1], null, {
 					"User-Agent": navigator.userAgent,
 					Origin: __uv.meta.url.origin,
 				});
@@ -39,7 +44,7 @@ class WebSocketApi extends EventEmitter {
 				const state = {
 					extensions: "",
 					protocol: "",
-					url: args[0],
+					url: url.toString(),
 					binaryType: "blob",
 					barews,
 					
